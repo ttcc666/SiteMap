@@ -1,38 +1,35 @@
 import React, { useState } from 'react';
 import type { Site } from '../types';
+import Favicon from './Favicon';
 
 interface SiteCardProps {
   site: Site;
   onEdit: (site: Site) => void;
   onDelete: (id: string) => void;
   onSiteClick: (id: string) => void;
+  isDragging?: boolean;
+  onDragStart?: () => void;
+  onDragEnter?: () => void;
+  onDragEnd?: () => void;
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  fallbackColor?: string;
 }
 
-const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick }) => {
+const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick, isDragging, onDragStart, onDragEnter, onDragEnd, onDragOver, fallbackColor }) => {
   const [showActions, setShowActions] = useState(false);
-  const [faviconError, setFaviconError] = useState(false);
-
-  const getFaviconUrl = (url: string) => {
-    try {
-      const hostname = new URL(url).hostname;
-      // 使用 DuckDuckGo 的服务，通常比 Google 的更可靠
-      return `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
-    } catch (e) {
-      return '';
-    }
-  };
   
-  const fallbackIcon = (
-    <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-blue-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
-      {site.name.charAt(0).toUpperCase()}
-    </div>
-  );
+  const draggingStyle = isDragging ? 'opacity-40 scale-95 shadow-2xl' : 'opacity-100';
 
   return (
     <div 
-      className="relative group"
+      className={`relative group cursor-grab transition-all duration-200 ${draggingStyle}`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
+      draggable={true}
+      onDragStart={onDragStart}
+      onDragEnter={onDragEnter}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
     >
       <a
         href={site.url}
@@ -41,16 +38,7 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick
         onClick={() => onSiteClick(site.id)}
         className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-md hover:shadow-lg hover:shadow-indigo-500/20 hover:bg-blue-50/50 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
       >
-        {!faviconError ? (
-            <img
-            src={getFaviconUrl(site.url)}
-            alt={`${site.name} favicon`}
-            className="w-10 h-10 object-contain flex-shrink-0 rounded-lg"
-            onError={() => setFaviconError(true)}
-            />
-        ) : (
-            fallbackIcon
-        )}
+        <Favicon url={site.url} name={site.name} size="large" fallbackColor={fallbackColor} />
         <span className="text-gray-800 font-medium truncate" title={site.name}>
           {site.name}
         </span>
@@ -64,7 +52,7 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick
           className="p-1.5 bg-white/50 hover:bg-gray-200/80 rounded-full text-gray-600 hover:text-indigo-700 backdrop-blur-sm"
           aria-label={`编辑 ${site.name}`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <svg xmlns="http://www.w.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
           </svg>
         </button>

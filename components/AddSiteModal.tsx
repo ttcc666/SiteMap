@@ -7,9 +7,10 @@ interface AddSiteModalProps {
   onSave: (site: Omit<Site, 'id'> & { id?: string }) => void;
   siteToEdit?: Site | null;
   existingCategories: string[];
+  sites: Site[];
 }
 
-const AddSiteModal: React.FC<AddSiteModalProps> = ({ isOpen, onClose, onSave, siteToEdit, existingCategories }) => {
+const AddSiteModal: React.FC<AddSiteModalProps> = ({ isOpen, onClose, onSave, siteToEdit, existingCategories, sites }) => {
   const [url, setUrl] = useState('');
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
@@ -35,16 +36,37 @@ const AddSiteModal: React.FC<AddSiteModalProps> = ({ isOpen, onClose, onSave, si
       return;
     }
 
+    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+    let newHostname: string;
     try {
-      new URL(url.startsWith('http') ? url : `https://${url}`);
+      newHostname = new URL(normalizedUrl).hostname;
     } catch (_) {
       setError('请输入有效的网址。');
+      return;
+    }
+
+    const isDuplicate = sites.some(site => {
+      if (siteToEdit && site.id === siteToEdit.id) {
+        return false;
+      }
+      try {
+        const existingHostname = new URL(site.url).hostname;
+        const cleanExisting = existingHostname.replace(/^www\./, '');
+        const cleanNew = newHostname.replace(/^www\./, '');
+        return cleanExisting === cleanNew;
+      } catch {
+        return false;
+      }
+    });
+
+    if (isDuplicate) {
+      setError('该网站已存在，请勿重复添加。');
       return;
     }
     
     onSave({
       id: siteToEdit?.id,
-      url: url.startsWith('http') ? url : `https://${url}`,
+      url: normalizedUrl,
       name,
       category: category.trim(),
     });

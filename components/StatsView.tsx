@@ -1,45 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import type { Site, AllSiteClickData } from '../types';
+import Favicon from './Favicon';
 
 interface StatsViewProps {
   sites: Site[];
   clickData: AllSiteClickData;
   onBack: () => void;
+  fallbackColor?: string;
 }
 
 type Period = 'daily' | 'weekly' | 'monthly';
 
-const getFaviconUrl = (url: string) => {
-    try {
-      const hostname = new URL(url).hostname;
-      return `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
-    } catch (e) {
-      return '';
-    }
-};
-
-const Favicon: React.FC<{ site: Site }> = ({ site }) => {
-    const [error, setError] = useState(false);
-
-    if (error) {
-        return (
-            <div className="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center text-indigo-600 font-bold text-sm flex-shrink-0">
-                {site.name.charAt(0).toUpperCase()}
-            </div>
-        );
-    }
-
-    return (
-        <img
-            src={getFaviconUrl(site.url)}
-            alt={`${site.name} favicon`}
-            className="w-6 h-6 object-contain rounded-md flex-shrink-0"
-            onError={() => setError(true)}
-        />
-    );
-};
-
-const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack }) => {
+const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbackColor }) => {
   const [period, setPeriod] = useState<Period>('daily');
 
   const periodMap: Record<Period, string> = {
@@ -99,7 +71,7 @@ const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack }) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                            <Favicon site={site} />
+                            <Favicon url={site.url} name={site.name} size="small" fallbackColor={fallbackColor} />
                             <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">{site.name}</div>
                             </div>

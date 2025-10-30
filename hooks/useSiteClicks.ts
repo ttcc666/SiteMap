@@ -77,5 +77,15 @@ export function useSiteClicks() {
     });
   };
 
-  return { clickData, trackClick };
+  const removeClickData = (siteId: string) => {
+    setClickData(prevData => {
+      const newData = { ...prevData };
+      if (newData[siteId]) {
+        delete newData[siteId];
+      }
+      return newData;
+    });
+  };
+
+  return { clickData, trackClick, removeClickData };
 }
