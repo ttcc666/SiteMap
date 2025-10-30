@@ -3,11 +3,15 @@ import type { Site } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import AddSiteModal from './components/AddSiteModal';
 import CategorySection from './components/CategorySection';
+import { useSiteClicks } from './hooks/useSiteClicks';
+import StatsView from './components/StatsView';
 
 const App: React.FC = () => {
   const [sites, setSites] = useLocalStorage<Site[]>('sites', []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
+  const { clickData, trackClick } = useSiteClicks();
+  const [view, setView] = useState<'dashboard' | 'stats'>('dashboard');
 
   const handleAddSite = () => {
     setEditingSite(null);
@@ -56,50 +60,64 @@ const App: React.FC = () => {
             </svg>
             <h1 className="text-2xl font-bold text-gray-900">导航中心</h1>
           </div>
+          <button
+            onClick={() => setView(view === 'dashboard' ? 'stats' : 'dashboard')}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-105"
+            >
+             {view === 'dashboard' ? '查看统计' : '返回主页'}
+          </button>
         </div>
       </header>
 
       <main className="p-4 sm:p-8">
-        <div className="max-w-7xl mx-auto">
-          {sites.length === 0 ? (
-            <div className="text-center py-20 px-6 rounded-2xl bg-white border-2 border-dashed border-gray-300">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">欢迎来到您的导航中心！</h2>
-              <p className="text-gray-600 max-w-lg mx-auto mb-8">
-                这里看起来有点空。通过添加您最喜欢的网站来开始构建您的个人仪表盘。
-              </p>
-              <button
-                onClick={handleAddSite}
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 transition-transform transform hover:scale-105"
-              >
-                <svg className="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-                添加您的第一个网站
-              </button>
-            </div>
-          ) : (
-            Object.keys(groupedSites).sort().map(category => (
-              <CategorySection
-                key={category}
-                categoryName={category}
-                sites={groupedSites[category]}
-                onEditSite={handleEditSite}
-                onDeleteSite={handleDeleteSite}
-              />
-            ))
-          )}
-        </div>
+        {view === 'dashboard' ? (
+          <div className="max-w-7xl mx-auto">
+            {sites.length === 0 ? (
+              <div className="text-center py-20 px-6 rounded-2xl bg-white border-2 border-dashed border-gray-300">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">欢迎来到您的导航中心！</h2>
+                <p className="text-gray-600 max-w-lg mx-auto mb-8">
+                  这里看起来有点空。通过添加您最喜欢的网站来开始构建您的个人仪表盘。
+                </p>
+                <button
+                  onClick={handleAddSite}
+                  className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 transition-transform transform hover:scale-105"
+                >
+                  <svg className="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                  添加您的第一个网站
+                </button>
+              </div>
+            ) : (
+              Object.keys(groupedSites).sort().map(category => (
+                <CategorySection
+                  key={category}
+                  categoryName={category}
+                  sites={groupedSites[category]}
+                  onEditSite={handleEditSite}
+                  onDeleteSite={handleDeleteSite}
+                  onSiteClick={trackClick}
+                />
+              ))
+            )}
+          </div>
+        ) : (
+          <StatsView sites={sites} clickData={clickData} onBack={() => setView('dashboard')} />
+        )}
       </main>
+      
+      {view === 'dashboard' && sites.length > 0 && (
+         <button
+            onClick={handleAddSite}
+            className="fixed bottom-8 right-8 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg z-30 transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+            aria-label="添加新网站"
+        >
+            <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+        </button>
+      )}
 
-      <button
-        onClick={handleAddSite}
-        className="fixed bottom-8 right-8 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg z-30 transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-        aria-label="添加新网站"
-      >
-        <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-      </button>
 
       <AddSiteModal
         isOpen={isModalOpen}

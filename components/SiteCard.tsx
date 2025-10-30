@@ -5,9 +5,10 @@ interface SiteCardProps {
   site: Site;
   onEdit: (site: Site) => void;
   onDelete: (id: string) => void;
+  onSiteClick: (id: string) => void;
 }
 
-const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete }) => {
+const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick }) => {
   const [showActions, setShowActions] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
 
@@ -37,6 +38,7 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete }) => {
         href={site.url}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => onSiteClick(site.id)}
         className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-md hover:shadow-lg hover:shadow-indigo-500/20 hover:bg-blue-50/50 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
       >
         {!faviconError ? (
