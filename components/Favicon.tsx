@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface FaviconProps {
   url: string;
@@ -19,17 +19,28 @@ const getFaviconUrl = (url: string) => {
 // Helper function to get contrasting text color (black or white)
 const getContrastingTextColor = (hexColor: string): string => {
     if (!hexColor) return '#000000';
-    const r = parseInt(hexColor.substr(1, 2), 16);
-    const g = parseInt(hexColor.substr(3, 2), 16);
-    const b = parseInt(hexColor.substr(5, 2), 16);
-    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    return (yiq >= 128) ? '#000000' : '#FFFFFF';
+    try {
+        const r = parseInt(hexColor.substr(1, 2), 16);
+        const g = parseInt(hexColor.substr(3, 2), 16);
+        const b = parseInt(hexColor.substr(5, 2), 16);
+        if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
+        const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        return (yiq >= 128) ? '#000000' : '#FFFFFF';
+    } catch {
+        return '#000000';
+    }
 };
 
 
-const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor = '#e0e7ff' }) => {
+const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor: fallbackColorFromProps }) => {
     const [error, setError] = useState(false);
 
+    // Reset error state if the url prop changes.
+    useEffect(() => {
+        setError(false);
+    }, [url]);
+    
+    const fallbackColor = fallbackColorFromProps || '#6366f1'; // Default to a known color if prop is not provided
     const sizeClasses = size === 'large' ? 'w-10 h-10' : 'w-6 h-6';
     const fallbackFontClasses = size === 'large' ? 'text-xl' : 'text-sm';
     const roundedClass = size === 'large' ? 'rounded-lg' : 'rounded-md';
@@ -50,13 +61,16 @@ const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor = '#e0
       </div>
     );
 
-    if (error || !url) {
+    const faviconUrl = getFaviconUrl(url);
+
+    if (error || !faviconUrl) {
       return fallbackIcon;
     }
 
     return (
         <img
-            src={getFaviconUrl(url)}
+            key={url} // Adding a key helps React efficiently update the element
+            src={faviconUrl}
             alt={`${name} favicon`}
             className={`${sizeClasses} object-contain flex-shrink-0 ${roundedClass}`}
             onError={() => setError(true)}

@@ -36,7 +36,7 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => onSiteClick(site.id)}
-        className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-md hover:shadow-lg hover:shadow-indigo-500/20 hover:bg-blue-50/50 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+        className="flex items-center space-x-4 bg-white/60 backdrop-blur-md p-4 rounded-xl shadow-md border border-white/20 hover:shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-400/50 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
       >
         <Favicon url={site.url} name={site.name} size="large" fallbackColor={fallbackColor} />
         <span className="text-gray-800 font-medium truncate" title={site.name}>
@@ -49,16 +49,16 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick
       >
         <button
           onClick={() => onEdit(site)}
-          className="p-1.5 bg-white/50 hover:bg-gray-200/80 rounded-full text-gray-600 hover:text-indigo-700 backdrop-blur-sm"
+          className="p-1.5 bg-white/50 hover:bg-gray-200/80 rounded-full text-gray-600 hover:text-indigo-700 backdrop-blur-md"
           aria-label={`编辑 ${site.name}`}
         >
-          <svg xmlns="http://www.w.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
           </svg>
         </button>
         <button
           onClick={() => onDelete(site.id)}
-          className="p-1.5 bg-white/50 hover:bg-red-100/80 rounded-full text-gray-600 hover:text-red-700 backdrop-blur-sm"
+          className="p-1.5 bg-white/50 hover:bg-red-100/80 rounded-full text-gray-600 hover:text-red-700 backdrop-blur-md"
           aria-label={`删除 ${site.name}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

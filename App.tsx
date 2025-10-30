@@ -127,8 +127,8 @@ const App: React.FC = () => {
   const existingCategories = useMemo(() => [...new Set(sites.map(s => s.category))], [sites]);
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-40 py-4 px-4 sm:px-8 border-b border-gray-200">
+    <div className="min-h-screen bg-transparent font-sans">
+      <header className="bg-white/70 backdrop-blur-xl sticky top-0 z-40 py-4 px-4 sm:px-8 border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
              <svg className="w-8 h-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -179,7 +179,7 @@ const App: React.FC = () => {
         {view === 'dashboard' ? (
           <div className="max-w-7xl mx-auto">
             {sites.length === 0 ? (
-              <div className="text-center py-20 px-6 rounded-2xl bg-white border-2 border-dashed border-gray-300">
+              <div className="text-center py-20 px-6 rounded-2xl bg-white/70 backdrop-blur-md border-2 border-dashed border-gray-300">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">欢迎来到您的导航中心！</h2>
                 <p className="text-gray-600 max-w-lg mx-auto mb-8">
                   这里看起来有点空。通过添加您最喜欢的网站来开始构建您的个人仪表盘。
@@ -246,7 +246,7 @@ const App: React.FC = () => {
       {view === 'dashboard' && sites.length > 0 && (
          <button
             onClick={handleAddSite}
-            className="fixed bottom-8 right-8 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg z-30 transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+            className="fixed bottom-8 right-8 bg-gradient-to-br from-indigo-500 to-violet-600 text-white p-4 rounded-full shadow-lg z-30 transition-all duration-300 transform hover:scale-110 hover:rotate-12 focus:outline-none focus:ring-4 focus:ring-indigo-300"
             aria-label="添加新网站"
         >
             <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

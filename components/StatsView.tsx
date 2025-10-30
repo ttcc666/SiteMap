@@ -50,48 +50,53 @@ const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbac
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">排名</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">网站</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">分类</th>
-                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">点击次数 ({periodMap[period]})</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {sortedSites.length > 0 ? sortedSites.map((site, index) => {
-                const clicks = clickData[site.id]?.[period] || 0;
-                return (
-                    <tr key={site.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${index < 3 ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800'}`}>{index + 1}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                            <Favicon url={site.url} name={site.name} size="small" fallbackColor={fallbackColor} />
-                            <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{site.name}</div>
-                            </div>
-                        </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{site.category}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-gray-900">{clicks}</td>
-                    </tr>
-                );
-              }) : (
-                <tr>
-                    <td colSpan={4} className="text-center py-12 text-gray-500">
-                        暂无数据。开始点击网站以生成统计信息！
-                    </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6">
+        <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider">
+          <div className="col-span-1 text-center">#</div>
+          <div className="col-span-6">网站</div>
+          <div className="col-span-3">分类</div>
+          <div className="col-span-2 text-center">点击 ({periodMap[period]})</div>
+        </div>
+  
+        <div className="flow-root">
+          <ul role="list" className="divide-y divide-gray-200/50">
+            {sortedSites.length > 0 ? sortedSites.map((site, index) => {
+              const clicks = clickData[site.id]?.[period] || 0;
+              const rankColor = 
+                index === 0 ? 'bg-amber-400 text-white' : 
+                index === 1 ? 'bg-slate-400 text-white' : 
+                index === 2 ? 'bg-amber-600/80 text-white' : 'bg-gray-100 text-gray-800';
+              return (
+                <li key={site.id} className="py-4 px-2 hover:bg-black/5 rounded-lg transition-colors duration-200">
+                  <div className="grid grid-cols-12 gap-4 items-center">
+                    <div className="col-span-2 sm:col-span-1 flex justify-center items-center">
+                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${rankColor} shadow`}>{index + 1}</span>
+                    </div>
+                    
+                    <div className="col-span-10 sm:col-span-6 flex items-center min-w-0">
+                      <Favicon url={site.url} name={site.name} size="small" fallbackColor={fallbackColor} />
+                      <div className="ml-4 truncate">
+                        <div className="text-sm font-medium text-gray-900 truncate">{site.name}</div>
+                        <div className="text-xs text-gray-500 truncate">{new URL(site.url).hostname}</div>
+                      </div>
+                    </div>
+
+                    <div className="hidden sm:block sm:col-span-3">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{site.category}</span>
+                    </div>
+
+                    <div className="hidden sm:block sm:col-span-2 text-center">
+                      <span className="text-lg font-semibold text-indigo-600">{clicks}</span>
+                    </div>
+                  </div>
+                </li>
+              );
+            }) : (
+              <div className="text-center py-12 text-gray-500">
+                暂无数据。开始点击网站以生成统计信息！
+              </div>
+            )}
+          </ul>
         </div>
       </div>
     </div>
