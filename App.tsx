@@ -6,6 +6,7 @@ import CategorySection from './components/CategorySection';
 import { useSiteClicks } from './hooks/useSiteClicks';
 import StatsView from './components/StatsView';
 import ConfirmModal from './components/ConfirmModal';
+import ManageCategoriesModal from './components/ManageCategoriesModal';
 
 const presetColors = [
   '#ef4444', // red-500
@@ -27,6 +28,7 @@ const presetColors = [
 
 const App: React.FC = () => {
   const [sites, setSites] = useLocalStorage<Site[]>('sites', []);
+  const [categoryIcons, setCategoryIcons] = useLocalStorage<Record<string, string>>('category-icons', {});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
   const { clickData, trackClick, removeClickData } = useSiteClicks();
@@ -36,6 +38,10 @@ const App: React.FC = () => {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [deletingSiteId, setDeletingSiteId] = useState<string | null>(null);
+  
+  const [isManageCategoriesModalOpen, setIsManageCategoriesModalOpen] = useState(false);
+  const [isConfirmCategoryDeleteModalOpen, setIsConfirmCategoryDeleteModalOpen] = useState(false);
+  const [deletingCategoryName, setDeletingCategoryName] = useState<string | null>(null);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -108,6 +114,51 @@ const App: React.FC = () => {
     });
   };
 
+  const handleRenameCategory = (oldName: string, newName: string) => {
+    setSites(prevSites => 
+      prevSites.map(site => site.category === oldName ? { ...site, category: newName } : site)
+    );
+    setCategoryIcons(prevIcons => {
+      if (prevIcons[oldName]) {
+        const newIcons = { ...prevIcons };
+        newIcons[newName] = newIcons[oldName];
+        delete newIcons[oldName];
+        return newIcons;
+      }
+      return prevIcons;
+    });
+  };
+
+  const handleDeleteCategoryRequest = (categoryName: string) => {
+    setDeletingCategoryName(categoryName);
+    setIsConfirmCategoryDeleteModalOpen(true);
+  };
+
+  const confirmDeleteCategory = () => {
+    if (deletingCategoryName) {
+      setSites(prevSites => 
+        prevSites.map(site => site.category === deletingCategoryName ? { ...site, category: '未分类' } : site)
+      );
+      setCategoryIcons(prevIcons => {
+        if (prevIcons[deletingCategoryName]) {
+            const newIcons = { ...prevIcons };
+            delete newIcons[deletingCategoryName];
+            return newIcons;
+        }
+        return prevIcons;
+      });
+    }
+    setIsConfirmCategoryDeleteModalOpen(false);
+    setDeletingCategoryName(null);
+  };
+  
+  const handleSetCategoryIcon = (categoryName: string, icon: string) => {
+    setCategoryIcons(prevIcons => ({
+      ...prevIcons,
+      [categoryName]: icon,
+    }));
+  };
+
   const groupedSites = useMemo(() => {
     const filtered = sites.filter(site =>
         site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -115,7 +166,7 @@ const App: React.FC = () => {
     );
 
     return filtered.reduce((acc, site) => {
-      const category = site.category || 'Uncategorized';
+      const category = site.category || '未分类';
       if (!acc[category]) {
         acc[category] = [];
       }
@@ -124,7 +175,11 @@ const App: React.FC = () => {
     }, {} as Record<string, Site[]>);
   }, [sites, searchQuery]);
   
-  const existingCategories = useMemo(() => [...new Set(sites.map(s => s.category))], [sites]);
+  const existingCategories = useMemo(() => {
+    const categories = new Set(sites.map(s => s.category || '未分类'));
+    return Array.from(categories);
+  }, [sites]);
+
 
   return (
     <div className="min-h-screen bg-transparent font-sans">
@@ -196,8 +251,8 @@ const App: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="mb-8">
-                    <div className="relative">
+                <div className="mb-8 flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-grow">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -212,6 +267,12 @@ const App: React.FC = () => {
                             aria-label="搜索网站"
                         />
                     </div>
+                    <button 
+                      onClick={() => setIsManageCategoriesModalOpen(true)}
+                      className="flex-shrink-0 inline-flex items-center justify-center px-5 py-3 border border-transparent text-sm font-medium rounded-full text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+                    >
+                      管理分类
+                    </button>
                 </div>
 
                 {Object.keys(groupedSites).length > 0 ? (
@@ -220,6 +281,7 @@ const App: React.FC = () => {
                         key={category}
                         categoryName={category}
                         sites={groupedSites[category]}
+                        icon={categoryIcons[category]}
                         onEditSite={handleEditSite}
                         onDeleteSite={handleDeleteSite}
                         onSiteClick={trackClick}
@@ -272,6 +334,25 @@ const App: React.FC = () => {
         title="确认删除"
         message="您确定要删除此网站吗？此操作无法撤销。"
       />
+
+      <ManageCategoriesModal
+        isOpen={isManageCategoriesModalOpen}
+        onClose={() => setIsManageCategoriesModalOpen(false)}
+        categories={existingCategories}
+        categoryIcons={categoryIcons}
+        onRename={handleRenameCategory}
+        onDelete={handleDeleteCategoryRequest}
+        onSetIcon={handleSetCategoryIcon}
+      />
+      
+      <ConfirmModal
+        isOpen={isConfirmCategoryDeleteModalOpen}
+        onClose={() => setIsConfirmCategoryDeleteModalOpen(false)}
+        onConfirm={confirmDeleteCategory}
+        title="确认删除分类"
+        message={`您确定要删除 "${deletingCategoryName}" 分类吗？该分类下的所有网站将被移至“未分类”。`}
+      />
+
     </div>
   );
 };

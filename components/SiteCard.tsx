@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Site } from '../types';
 import Favicon from './Favicon';
 
@@ -16,15 +16,11 @@ interface SiteCardProps {
 }
 
 const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick, isDragging, onDragStart, onDragEnter, onDragEnd, onDragOver, fallbackColor }) => {
-  const [showActions, setShowActions] = useState(false);
-  
   const draggingStyle = isDragging ? 'opacity-40 scale-95 shadow-2xl' : 'opacity-100';
 
   return (
     <div 
       className={`relative group cursor-grab transition-all duration-200 ${draggingStyle}`}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
       draggable={true}
       onDragStart={onDragStart}
       onDragEnter={onDragEnter}
@@ -36,7 +32,7 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => onSiteClick(site.id)}
-        className="flex items-center space-x-4 bg-white/60 backdrop-blur-md p-4 rounded-xl shadow-md border border-white/20 hover:shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-400/50 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+        className="flex items-center space-x-4 bg-white/60 backdrop-blur-md p-4 rounded-xl shadow-md border border-white/20 hover:shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-400/50 transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-50"
       >
         <Favicon url={site.url} name={site.name} size="large" fallbackColor={fallbackColor} />
         <span className="text-gray-800 font-medium truncate" title={site.name}>
@@ -45,11 +41,11 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick
       </a>
       
       <div 
-        className={`absolute top-2 right-2 flex space-x-1 transition-opacity duration-200 ${showActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+        className="absolute top-2 right-2 flex space-x-1 transition-opacity duration-200 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
       >
         <button
           onClick={() => onEdit(site)}
-          className="p-1.5 bg-white/50 hover:bg-gray-200/80 rounded-full text-gray-600 hover:text-indigo-700 backdrop-blur-md"
+          className="p-1.5 bg-white/50 hover:bg-gray-200/80 rounded-full text-gray-600 hover:text-indigo-700 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           aria-label={`编辑 ${site.name}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -58,7 +54,7 @@ const SiteCard: React.FC<SiteCardProps> = ({ site, onEdit, onDelete, onSiteClick
         </button>
         <button
           onClick={() => onDelete(site.id)}
-          className="p-1.5 bg-white/50 hover:bg-red-100/80 rounded-full text-gray-600 hover:text-red-700 backdrop-blur-md"
+          className="p-1.5 bg-white/50 hover:bg-red-100/80 rounded-full text-gray-600 hover:text-red-700 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-red-500"
           aria-label={`删除 ${site.name}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

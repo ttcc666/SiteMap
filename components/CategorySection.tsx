@@ -5,6 +5,7 @@ import SiteCard from './SiteCard';
 interface CategorySectionProps {
   categoryName: string;
   sites: Site[];
+  icon?: string;
   onEditSite: (site: Site) => void;
   onDeleteSite: (id: string) => void;
   onSiteClick: (id: string) => void;
@@ -12,7 +13,7 @@ interface CategorySectionProps {
   fallbackColor?: string;
 }
 
-const CategorySection: React.FC<CategorySectionProps> = ({ categoryName, sites, onEditSite, onDeleteSite, onSiteClick, onReorder, fallbackColor }) => {
+const CategorySection: React.FC<CategorySectionProps> = ({ categoryName, sites, icon, onEditSite, onDeleteSite, onSiteClick, onReorder, fallbackColor }) => {
   const dragItemIndex = useRef<number | null>(null);
   const [currentlyDraggingIndex, setCurrentlyDraggingIndex] = useState<number | null>(null);
 
@@ -36,7 +37,10 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categoryName, sites, 
   return (
     <div className="mb-12">
       <h2 className="relative text-2xl font-bold text-indigo-600 mb-6 pb-2">
-        {categoryName}
+        <span className="flex items-center">
+          {icon && <span className="mr-3 text-2xl">{icon}</span>}
+          {categoryName}
+        </span>
         <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
