@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BaseModal from './BaseModal';
+import CustomSelect from './CustomSelect';
+import CustomRadio from './CustomRadio';
 import type { Site } from '../types';
 
 interface BatchEditModalProps {
@@ -115,17 +117,15 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({
           <label htmlFor="batch-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             分类
           </label>
-          <select
-            id="batch-category"
+          <CustomSelect
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-          >
-            <option value="">不修改分类</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
+            onChange={(value) => setCategory(value as string)}
+            placeholder="不修改分类"
+            options={[
+              { value: '', label: '不修改分类' },
+              ...categories.map(cat => ({ value: cat, label: cat }))
+            ]}
+          />
         </div>
 
         {/* 标签编辑 */}
@@ -134,30 +134,17 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({
             <label htmlFor="batch-tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               标签
             </label>
-            <div className="flex items-center space-x-2">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="updateMode"
-                  value="replace"
-                  checked={updateMode === 'replace'}
-                  onChange={(e) => setUpdateMode(e.target.value as 'replace' | 'append')}
-                  className="mr-1"
-                />
-                <span className="text-xs text-gray-600 dark:text-gray-400">替换</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="updateMode"
-                  value="append"
-                  checked={updateMode === 'append'}
-                  onChange={(e) => setUpdateMode(e.target.value as 'replace' | 'append')}
-                  className="mr-1"
-                />
-                <span className="text-xs text-gray-600 dark:text-gray-400">追加</span>
-              </label>
-            </div>
+            <CustomRadio
+              name="updateMode"
+              value={updateMode}
+              onChange={(value) => setUpdateMode(value as 'replace' | 'append')}
+              options={[
+                { value: 'replace', label: '替换', description: '完全替换现有标签' },
+                { value: 'append', label: '追加', description: '添加到现有标签' }
+              ]}
+              layout="horizontal"
+              className="text-xs"
+            />
           </div>
 
           {/* 标签输入 */}

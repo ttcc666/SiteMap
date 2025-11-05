@@ -7,14 +7,53 @@ interface CacheItem {
   url: string;
   timestamp: number;
   accessCount: number;
+  isSuccess: boolean;
 }
 
 class ImageCache {
   private cache = new Map<string, CacheItem>();
   private readonly maxSize: number;
+  private readonly storageKey = 'favicon-cache';
+  private readonly cacheExpiry = 7 * 24 * 60 * 60 * 1000; // 7天
 
   constructor(maxSize = 200) {
     this.maxSize = maxSize;
+    this.loadFromStorage();
+  }
+
+  /**
+   * 从localStorage加载缓存
+   */
+  private loadFromStorage(): void {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const data = JSON.parse(stored);
+        const now = Date.now();
+
+        for (const [domain, item] of Object.entries(data)) {
+          const cacheItem = item as CacheItem;
+          // 检查是否过期
+          if (now - cacheItem.timestamp < this.cacheExpiry) {
+            this.cache.set(domain, cacheItem);
+          }
+        }
+      }
+    } catch (e) {
+      // 忽略localStorage错误
+    }
+  }
+
+  /**
+   * 保存缓存到localStorage
+   */
+  private saveToStorage(): void {
+    try {
+      const data = Object.fromEntries(this.cache.entries());
+      localStorage.setItem(this.storageKey, JSON.stringify(data));
+    } catch (e) {
+      // 忽略localStorage错误
+    }
   }
 
   /**
@@ -22,19 +61,28 @@ class ImageCache {
    */
   get(domain: string): string | null {
     const item = this.cache.get(domain);
-    if (item) {
+    if (item && item.isSuccess) {
       // 更新访问时间和次数
       item.timestamp = Date.now();
       item.accessCount++;
+      this.saveToStorage();
       return item.url;
     }
     return null;
   }
 
   /**
+   * 检查域名是否已失败缓存
+   */
+  isFailed(domain: string): boolean {
+    const item = this.cache.get(domain);
+    return item ? !item.isSuccess : false;
+  }
+
+  /**
    * 设置图标缓存
    */
-  set(domain: string, url: string): void {
+  set(domain: string, url: string, isSuccess: boolean = true): void {
     // 如果缓存已满，删除最少使用的项目
     if (this.cache.size >= this.maxSize && !this.cache.has(domain)) {
       this.evictLRU();
@@ -43,8 +91,18 @@ class ImageCache {
     this.cache.set(domain, {
       url,
       timestamp: Date.now(),
-      accessCount: 1
+      accessCount: 1,
+      isSuccess
     });
+
+    this.saveToStorage();
+  }
+
+  /**
+   * 设置失败缓存
+   */
+  setFailed(domain: string): void {
+    this.set(domain, '', false);
   }
 
   /**

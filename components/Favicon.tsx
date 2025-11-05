@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { imageCache, extractDomain, generateFaviconUrl } from '../utils/imageCache';
 
 interface FaviconProps {
@@ -11,11 +11,12 @@ interface FaviconProps {
 const getFaviconUrls = (url: string) => {
     try {
       const domain = extractDomain(url);
-      const protocol = url.startsWith('https://') ? 'https://' : 'https://';
 
-      // 只使用网站原生图标，不使用第三方服务
+      // 优先使用DuckDuckGo图标服务，备选原生favicon
       return [
-        `${protocol}${domain}/favicon.ico`
+        generateFaviconUrl(domain),
+        `https://${domain}/favicon.ico`,
+        `http://${domain}/favicon.ico`
       ];
     } catch (e) {
       return [];
@@ -41,10 +42,46 @@ const getContrastingTextColor = (hexColor: string): string => {
 const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor: fallbackColorFromProps }) => {
     const [currentUrlIndex, setCurrentUrlIndex] = useState(0);
     const [faviconUrls, setFaviconUrls] = useState(() => getFaviconUrls(url));
+    const [isLoading, setIsLoading] = useState(true);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
+        const domain = extractDomain(url);
+
+        // 检查缓存
+        const cachedUrl = imageCache.get(domain);
+        if (cachedUrl) {
+            setFaviconUrls([cachedUrl]);
+            setCurrentUrlIndex(0);
+            setIsLoading(false);
+            return;
+        }
+
+        // 检查是否已失败缓存
+        if (imageCache.isFailed(domain)) {
+            setCurrentUrlIndex(getFaviconUrls(url).length);
+            setIsLoading(false);
+            return;
+        }
+
+        const urls = getFaviconUrls(url);
         setCurrentUrlIndex(0);
-        setFaviconUrls(getFaviconUrls(url));
+        setFaviconUrls(urls);
+        setIsLoading(true);
+
+        // 3秒超时机制
+        timeoutRef.current = setTimeout(() => {
+            setCurrentUrlIndex(urls.length);
+            setIsLoading(false);
+            imageCache.setFailed(domain);
+        }, 3000);
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        };
     }, [url]);
 
     const fallbackColor = fallbackColorFromProps || '#6366f1';
@@ -69,17 +106,30 @@ const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor: fallb
     );
 
     const handleError = () => {
-        // 快速失败：第一次错误后直接显示后备方案
-        setCurrentUrlIndex(faviconUrls.length);
+        // 尝试下一个URL，如果没有更多URL则显示fallback并缓存失败
+        if (currentUrlIndex < faviconUrls.length - 1) {
+            setCurrentUrlIndex(currentUrlIndex + 1);
+        } else {
+            setCurrentUrlIndex(faviconUrls.length);
+            setIsLoading(false);
+            const domain = extractDomain(url);
+            imageCache.setFailed(domain);
+        }
     };
 
     const handleLoad = () => {
-        // 成功加载时，将图标URL缓存起来
+        // 成功加载时，清除超时器并缓存图标URL
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+
         const domain = extractDomain(url);
         const currentUrl = faviconUrls[currentUrlIndex];
         if (currentUrl && !imageCache.has(domain)) {
             imageCache.set(domain, currentUrl);
         }
+        setIsLoading(false);
     };
 
     if (currentUrlIndex >= faviconUrls.length || faviconUrls.length === 0) {

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import type { CustomTheme, ThemeColors } from '../types';
 import BaseModal from './BaseModal';
+import CustomColorPicker from './CustomColorPicker';
+import CustomRadio from './CustomRadio';
 
 interface ThemeCustomizerProps {
   isOpen: boolean;
@@ -77,26 +79,16 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ isOpen, onClose }) =>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             主题类型
           </label>
-          <div className="flex space-x-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                checked={!isDark}
-                onChange={() => setIsDark(false)}
-                className="mr-2"
-              />
-              浅色主题
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                checked={isDark}
-                onChange={() => setIsDark(true)}
-                className="mr-2"
-              />
-              深色主题
-            </label>
-          </div>
+          <CustomRadio
+            name="themeType"
+            value={isDark ? 'dark' : 'light'}
+            onChange={(value) => setIsDark(value === 'dark')}
+            options={[
+              { value: 'light', label: '浅色主题', description: '适合白天使用' },
+              { value: 'dark', label: '深色主题', description: '适合夜间使用' }
+            ]}
+            layout="horizontal"
+          />
         </div>
 
         {/* 颜色配置 */}
@@ -107,11 +99,9 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ isOpen, onClose }) =>
           <div className="grid grid-cols-2 gap-4">
             {Object.entries(colorLabels).map(([key, label]) => (
               <div key={key} className="flex items-center space-x-3">
-                <input
-                  type="color"
+                <CustomColorPicker
                   value={colors[key as keyof ThemeColors]}
-                  onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
-                  className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600"
+                  onChange={(color) => handleColorChange(key as keyof ThemeColors, color)}
                 />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-300">

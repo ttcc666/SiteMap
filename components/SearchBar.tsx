@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useDebounce } from '../hooks/useDebounce';
+import CustomSelect from './CustomSelect';
 import type { Site } from '../types';
 
 interface SearchBarProps {
@@ -122,16 +123,16 @@ const SearchBar: React.FC<SearchBarProps> = ({ sites, onFilteredSites, categorie
             className="w-full bg-white/60 dark:bg-gray-800/60 border border-white/20 dark:border-gray-700/50 rounded-lg px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition backdrop-blur-md"
           />
         </div>
-        <select
+        <CustomSelect
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="bg-white/60 dark:bg-gray-800/60 border border-white/20 dark:border-gray-700/50 rounded-lg px-4 py-3 text-gray-900 dark:text-gray-100 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition backdrop-blur-md"
-        >
-          <option value="">所有分类</option>
-          {categories.map(category => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
+          onChange={(value) => setSelectedCategory(value as string)}
+          placeholder="所有分类"
+          options={[
+            { value: '', label: '所有分类' },
+            ...categories.map(category => ({ value: category, label: category }))
+          ]}
+          className="min-w-[140px]"
+        />
         {(searchTerm || selectedCategory || selectedTags.length > 0) && (
           <button
             onClick={clearFilters}
