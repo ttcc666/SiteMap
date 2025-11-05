@@ -1,7 +1,7 @@
 // Fix: Import the 'React' namespace to allow usage of React types.
 import React, { useState, useEffect } from 'react';
 
-export function useLocalStorage<T,>(key: string, initialValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
+export function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
@@ -17,11 +17,7 @@ export function useLocalStorage<T,>(key: string, initialValue: T): [T, React.Dis
 
   useEffect(() => {
     try {
-      const valueToStore =
-        typeof storedValue === 'function'
-          ? storedValue(storedValue)
-          : storedValue;
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
     } catch (error) {
       console.error(error);
     }

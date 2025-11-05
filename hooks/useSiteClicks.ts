@@ -1,4 +1,5 @@
 import { useLocalStorage } from './useLocalStorage';
+import { useMemo, useCallback } from 'react';
 import type { AllSiteClickData } from '../types';
 
 // 获取一天的开始时间（午夜）
@@ -28,13 +29,27 @@ const getStartOfMonth = (date: Date) => {
 export function useSiteClicks() {
   const [clickData, setClickData] = useLocalStorage<AllSiteClickData>('site-clicks', {});
 
-  const trackClick = (siteId: string) => {
+  const timeStamps = useMemo(() => {
+    const now = new Date();
+    return {
+      daily: getStartOfDay(now).getTime(),
+      weekly: getStartOfWeek(now).getTime(),
+      monthly: getStartOfMonth(now).getTime(),
+    };
+  }, []);
+
+  const updatePeriodCount = (data: any, period: 'daily' | 'weekly' | 'monthly', timestamp: number) => {
+    const lastResetKey = `last${period.charAt(0).toUpperCase() + period.slice(1)}Reset` as const;
+    if (data[lastResetKey] < timestamp) {
+      data[period] = 1;
+      data[lastResetKey] = timestamp;
+    } else {
+      data[period] += 1;
+    }
+  };
+
+  const trackClick = useCallback((siteId: string) => {
     setClickData(prevData => {
-      const now = new Date();
-      const todayStart = getStartOfDay(now).getTime();
-      const thisWeekStart = getStartOfWeek(now).getTime();
-      const thisMonthStart = getStartOfMonth(now).getTime();
-      
       const currentSiteData = prevData[siteId] || {
         daily: 0,
         weekly: 0,
@@ -45,47 +60,23 @@ export function useSiteClicks() {
       };
 
       const newData = { ...currentSiteData };
-
-      // 每日重置检查
-      if (currentSiteData.lastDailyReset < todayStart) {
-        newData.daily = 1;
-        newData.lastDailyReset = todayStart;
-      } else {
-        newData.daily += 1;
-      }
-
-      // 每周重置检查
-      if (currentSiteData.lastWeeklyReset < thisWeekStart) {
-        newData.weekly = 1;
-        newData.lastWeeklyReset = thisWeekStart;
-      } else {
-        newData.weekly += 1;
-      }
-      
-      // 每月重置检查
-      if (currentSiteData.lastMonthlyReset < thisMonthStart) {
-        newData.monthly = 1;
-        newData.lastMonthlyReset = thisMonthStart;
-      } else {
-        newData.monthly += 1;
-      }
+      updatePeriodCount(newData, 'daily', timeStamps.daily);
+      updatePeriodCount(newData, 'weekly', timeStamps.weekly);
+      updatePeriodCount(newData, 'monthly', timeStamps.monthly);
 
       return {
         ...prevData,
         [siteId]: newData
       };
     });
-  };
+  }, [timeStamps]);
 
-  const removeClickData = (siteId: string) => {
+  const removeClickData = useCallback((siteId: string) => {
     setClickData(prevData => {
-      const newData = { ...prevData };
-      if (newData[siteId]) {
-        delete newData[siteId];
-      }
+      const { [siteId]: removed, ...newData } = prevData;
       return newData;
     });
-  };
+  }, [setClickData]);
 
   return { clickData, trackClick, removeClickData };
 }

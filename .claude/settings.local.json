@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(rm \"d:\\Study\\GoogleStudio\\SiteMap\\components\\ManageCategoriesMModal.tsx\")",
+      "Bash(npm run dev)",
+      "Bash(icon.svg)",
+      "Bash(del icon-192.png 2)",
+      "Bash(nul)",
+      "Bash(del create-icons.html icon-192.png 2)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

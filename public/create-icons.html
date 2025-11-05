@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Icons</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+
+            // 背景
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(0, 0, size, size);
+
+            // 白色圆圈
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/3, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // 蓝色菱形
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.moveTo(size/2, size/2 - size/6);
+            ctx.lineTo(size/2 + size/6, size/2);
+            ctx.lineTo(size/2, size/2 + size/6);
+            ctx.lineTo(size/2 - size/6, size/2);
+            ctx.closePath();
+            ctx.fill();
+
+            // 下载
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // 创建图标
+        createIcon('canvas192', 192);
+        createIcon('canvas512', 512);
+    </script>
+</body>
+</html>

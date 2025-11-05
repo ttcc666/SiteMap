@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { imageCache, extractDomain, generateFaviconUrl } from '../utils/imageCache';
 
 interface FaviconProps {
   url: string;
@@ -7,12 +8,17 @@ interface FaviconProps {
   fallbackColor?: string;
 }
 
-const getFaviconUrl = (url: string) => {
+const getFaviconUrls = (url: string) => {
     try {
-      const hostname = new URL(url).hostname;
-      return `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
+      const domain = extractDomain(url);
+      const protocol = url.startsWith('https://') ? 'https://' : 'https://';
+
+      // 只使用网站原生图标，不使用第三方服务
+      return [
+        `${protocol}${domain}/favicon.ico`
+      ];
     } catch (e) {
-      return '';
+      return [];
     }
 };
 
@@ -33,14 +39,15 @@ const getContrastingTextColor = (hexColor: string): string => {
 
 
 const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor: fallbackColorFromProps }) => {
-    const [error, setError] = useState(false);
+    const [currentUrlIndex, setCurrentUrlIndex] = useState(0);
+    const [faviconUrls, setFaviconUrls] = useState(() => getFaviconUrls(url));
 
-    // Reset error state if the url prop changes.
     useEffect(() => {
-        setError(false);
+        setCurrentUrlIndex(0);
+        setFaviconUrls(getFaviconUrls(url));
     }, [url]);
-    
-    const fallbackColor = fallbackColorFromProps || '#6366f1'; // Default to a known color if prop is not provided
+
+    const fallbackColor = fallbackColorFromProps || '#6366f1';
     const sizeClasses = size === 'large' ? 'w-10 h-10' : 'w-6 h-6';
     const fallbackFontClasses = size === 'large' ? 'text-xl' : 'text-sm';
     const roundedClass = size === 'large' ? 'rounded-lg' : 'rounded-md';
@@ -51,7 +58,7 @@ const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor: fallb
     };
 
     const fallbackIcon = (
-      <div 
+      <div
         className={`${sizeClasses} ${roundedClass} flex-shrink-0 flex items-center justify-center font-bold`}
         style={fallbackStyle}
       >
@@ -61,19 +68,34 @@ const Favicon: React.FC<FaviconProps> = ({ url, name, size, fallbackColor: fallb
       </div>
     );
 
-    const faviconUrl = getFaviconUrl(url);
+    const handleError = () => {
+        // 快速失败：第一次错误后直接显示后备方案
+        setCurrentUrlIndex(faviconUrls.length);
+    };
 
-    if (error || !faviconUrl) {
-      return fallbackIcon;
+    const handleLoad = () => {
+        // 成功加载时，将图标URL缓存起来
+        const domain = extractDomain(url);
+        const currentUrl = faviconUrls[currentUrlIndex];
+        if (currentUrl && !imageCache.has(domain)) {
+            imageCache.set(domain, currentUrl);
+        }
+    };
+
+    if (currentUrlIndex >= faviconUrls.length || faviconUrls.length === 0) {
+        return fallbackIcon;
     }
 
     return (
         <img
-            key={url} // Adding a key helps React efficiently update the element
-            src={faviconUrl}
+            key={`${url}-${currentUrlIndex}`}
+            src={faviconUrls[currentUrlIndex]}
             alt={`${name} favicon`}
             className={`${sizeClasses} object-contain flex-shrink-0 ${roundedClass}`}
-            onError={() => setError(true)}
+            onError={handleError}
+            onLoad={handleLoad}
+            loading="lazy"
+            style={{ maxWidth: '100%', maxHeight: '100%' }}
         />
     );
 };

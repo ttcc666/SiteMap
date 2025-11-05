@@ -11,7 +11,7 @@ interface StatsViewProps {
 
 type Period = 'daily' | 'weekly' | 'monthly';
 
-const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbackColor }) => {
+const StatsView = React.memo<StatsViewProps>(({ sites, clickData, onBack, fallbackColor }) => {
   const [period, setPeriod] = useState<Period>('daily');
 
   const periodMap: Record<Period, string> = {
@@ -22,12 +22,13 @@ const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbac
 
   const sortedSites = useMemo(() => {
     if (sites.length === 0) return [];
-    return [...sites].sort((a, b) => {
-      const clicksA = clickData[a.id]?.[period] || 0;
-      const clicksB = clickData[b.id]?.[period] || 0;
-      return clicksB - clicksA;
-    });
-  }, [sites, clickData, period]);
+    return sites
+      .map(site => ({
+        ...site,
+        clicks: clickData[site.id]?.[period] || 0
+      }))
+      .sort((a, b) => b.clicks - a.clicks);
+  }, [sites.length, clickData, period]);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -61,10 +62,9 @@ const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbac
         <div className="flow-root">
           <ul role="list" className="divide-y divide-gray-200/50">
             {sortedSites.length > 0 ? sortedSites.map((site, index) => {
-              const clicks = clickData[site.id]?.[period] || 0;
-              const rankColor = 
-                index === 0 ? 'bg-amber-400 text-white' : 
-                index === 1 ? 'bg-slate-400 text-white' : 
+              const rankColor =
+                index === 0 ? 'bg-amber-400 text-white' :
+                index === 1 ? 'bg-slate-400 text-white' :
                 index === 2 ? 'bg-amber-600/80 text-white' : 'bg-gray-100 text-gray-800';
               return (
                 <li key={site.id} className="py-4 px-2 hover:bg-black/5 rounded-lg transition-colors duration-200">
@@ -72,7 +72,7 @@ const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbac
                     <div className="col-span-2 sm:col-span-1 flex justify-center items-center">
                       <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${rankColor} shadow`}>{index + 1}</span>
                     </div>
-                    
+
                     <div className="col-span-10 sm:col-span-6 flex items-center min-w-0">
                       <Favicon url={site.url} name={site.name} size="small" fallbackColor={fallbackColor} />
                       <div className="ml-4 truncate">
@@ -86,7 +86,7 @@ const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbac
                     </div>
 
                     <div className="hidden sm:block sm:col-span-2 text-center">
-                      <span className="text-lg font-semibold text-indigo-600">{clicks}</span>
+                      <span className="text-lg font-semibold text-indigo-600">{site.clicks}</span>
                     </div>
                   </div>
                 </li>
@@ -101,6 +101,6 @@ const StatsView: React.FC<StatsViewProps> = ({ sites, clickData, onBack, fallbac
       </div>
     </div>
   );
-};
+});
 
 export default StatsView;

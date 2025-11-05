@@ -4,7 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>个人导航中心</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="个人网站书签管理和导航中心" />
+
+    <!-- Apple PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="导航中心" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%233b82f6'/><circle cx='96' cy='96' r='60' fill='white'/><path d='M96 56 L136 96 L96 136 L56 96 Z' fill='%233b82f6'/></svg>" />
+
+    <!-- Microsoft PWA Support -->
+    <meta name="msapplication-TileColor" content="#3b82f6" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%233b82f6'/><circle cx='96' cy='96' r='60' fill='white'/><path d='M96 56 L136 96 L96 136 L56 96 Z' fill='%233b82f6'/></svg>" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class'
+      }
+    </script>
     <style>
       body {
         -webkit-font-smoothing: antialiased;
@@ -12,6 +36,11 @@
         background-color: #f8fafc; /* Tailwind slate-50 */
         background-image: radial-gradient(circle at 1px 1px, #d1d5db 0.5px, transparent 0); /* Tailwind gray-300 */
         background-size: 20px 20px;
+        transition: background-color 0.3s ease;
+      }
+      .dark body {
+        background-color: #0f172a; /* Tailwind slate-900 */
+        background-image: radial-gradient(circle at 1px 1px, #374151 0.5px, transparent 0); /* Tailwind gray-700 */
       }
     </style>
   <script type="importmap">
