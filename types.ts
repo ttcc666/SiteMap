@@ -1,4 +1,3 @@
-
 export interface Site {
   id: string;
   url: string;
@@ -20,25 +19,3 @@ export interface SiteClickData {
 export interface AllSiteClickData {
   [siteId: string]: SiteClickData;
 }
-
-// 主题相关类型定义
-export interface ThemeColors {
-  primary: string;
-  secondary: string;
-  background: string;
-  surface: string;
-  text: string;
-  textSecondary: string;
-  border: string;
-  accent: string;
-}
-
-export interface CustomTheme {
-  id: string;
-  name: string;
-  colors: ThemeColors;
-  isDark: boolean;
-  isCustom: boolean;
-}
-
-export type ThemeType = 'light' | 'dark' | 'custom';
